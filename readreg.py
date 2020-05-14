@@ -42,6 +42,7 @@ temperature = instrument.read_register(BAT_TEMP, 2, 4, False)  # Registernumber,
 print("Batt. temp:\t" + str(temperature) + "C")
 
 # Set battery type, 1 = Sealed
+instrument.write_register(0x9000, 1, 0, functioncode=0x10, signed=False)
 battery_type = instrument.read_register(0x9000, 0, 3, False)  # Registernumber, number of decimals
 type_string = ""
 if battery_type == 1:
@@ -50,12 +51,13 @@ elif battery_type == 2:
     type_string = "Gel"
 elif battery_type == 3:
     type_string = "Flooded"
-elif battery_type == 4:
+elif battery_type == 0:
     type_string = "User defined"
 print("Battery type:\t" + type_string)
 
-# Set capacity to 105 Ah
-instrument.write_register(0x9001, 105, 0, functioncode=0x10, signed=False)
+# Set capacity
+capacity = 75
+instrument.write_register(0x9001, capacity, 0, functioncode=0x10, signed=False)
 battery_capacity = instrument.read_register(0x9001, 0, 3, False)  # Registernumber, number of decimals
 print("Battery capac.:\t" + str(battery_capacity) + "Ah")
 
@@ -69,4 +71,9 @@ else:
     volt_string = str(12 * battery_rated_volt)
 
 print("System voltage:\t" + volt_string + "V")
+
+
+print("Voltage configuration:")
+val = instrument.read_register(0x900E, 2, 3, False)
+print(val)
 
