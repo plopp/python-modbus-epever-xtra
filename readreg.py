@@ -2,15 +2,20 @@
 import minimalmodbus
 import serial
 
-instrument = minimalmodbus.Instrument('/dev/ttyUSB0', 1)  # port name, slave address (in decimal)
+# Set to true to edit values
+WRITE = True
 
-instrument.serial.baudrate = 115200         # Baud
+instrument = minimalmodbus.Instrument(
+    "/dev/ttyUSB0", 1
+)  # port name, slave address (in decimal)
+
+instrument.serial.baudrate = 115200  # Baud
 instrument.serial.bytesize = 8
-instrument.serial.parity   = serial.PARITY_NONE
+instrument.serial.parity = serial.PARITY_NONE
 instrument.serial.stopbits = 1
-instrument.serial.timeout  = 0.2          # seconds
+instrument.serial.timeout = 0.2  # seconds
 
-instrument.mode = minimalmodbus.MODE_RTU   # rtu or ascii mode
+instrument.mode = minimalmodbus.MODE_RTU  # rtu or ascii mode
 instrument.clear_buffers_before_each_transaction = True
 
 PV_VOLTAGE = 0x3100
@@ -30,20 +35,32 @@ BAT_SOC = 0x311A
 BAT_RATED_VOLTAGE = 0x9067
 
 # Print panel info
-pv_voltage = instrument.read_register(PV_VOLTAGE, 2, 4, False)  # Registernumber, number of decimals
+pv_voltage = instrument.read_register(
+    PV_VOLTAGE, 2, 4, False
+)  # Registernumber, number of decimals
 print("Panel voltage:\t" + str(pv_voltage) + "V")
-pv_current = instrument.read_register(PV_CURRENT, 2, 4, False)  # Registernumber, number of decimals
+pv_current = instrument.read_register(
+    PV_CURRENT, 2, 4, False
+)  # Registernumber, number of decimals
 print("Panel current:\t" + str(pv_current) + "A")
 
 # Print battery info
-bat_voltage = instrument.read_register(BAT_VOLTAGE, 2, 4, False)  # Registernumber, number of decimals
+bat_voltage = instrument.read_register(
+    BAT_VOLTAGE, 2, 4, False
+)  # Registernumber, number of decimals
 print("Batt. voltage:\t" + str(bat_voltage) + "V")
-temperature = instrument.read_register(BAT_TEMP, 2, 4, False)  # Registernumber, number of decimals
+temperature = instrument.read_register(
+    BAT_TEMP, 2, 4, False
+)  # Registernumber, number of decimals
 print("Batt. temp:\t" + str(temperature) + "C")
 
-# Set battery type, 1 = Sealed
-instrument.write_register(0x9000, 1, 0, functioncode=0x10, signed=False)
-battery_type = instrument.read_register(0x9000, 0, 3, False)  # Registernumber, number of decimals
+if WRITE:
+    # Set battery type, 1 = Sealed
+    sealed = 1
+    instrument.write_register(0x9000, 1, 0, functioncode=0x10, signed=False)
+battery_type = instrument.read_register(
+    0x9000, 0, 3, False
+)  # Registernumber, number of decimals
 type_string = ""
 if battery_type == 1:
     type_string = "Sealed"
@@ -55,15 +72,24 @@ elif battery_type == 0:
     type_string = "User defined"
 print("Battery type:\t" + type_string)
 
-# Set capacity
-capacity = 75
-instrument.write_register(0x9001, capacity, 0, functioncode=0x10, signed=False)
-battery_capacity = instrument.read_register(0x9001, 0, 3, False)  # Registernumber, number of decimals
+if WRITE:
+    # Set capacity
+    capacity = 75
+    instrument.write_register(0x9001, capacity, 0, functioncode=0x10, signed=False)
+battery_capacity = instrument.read_register(
+    0x9001, 0, 3, False
+)  # Registernumber, number of decimals
 print("Battery capac.:\t" + str(battery_capacity) + "Ah")
 
-# Set battery voltage, 0 = auto detect, 1 = 12 V, 2 = 24V
-instrument.write_register(BAT_RATED_VOLTAGE, 1, 0, functioncode=0x10, signed=False)
-battery_rated_volt = instrument.read_register(BAT_RATED_VOLTAGE, 0, 3, False)  # Registernumber, number of decimals
+if WRITE:
+    # Set battery voltage, 0 = auto detect, 1 = 12 V, 2 = 24V
+    v_auto = 0
+    v_12 = 1
+    v_24 = 2
+    instrument.write_register(BAT_RATED_VOLTAGE, v_12, 0, functioncode=0x10, signed=False)
+battery_rated_volt = instrument.read_register(
+    BAT_RATED_VOLTAGE, 0, 3, False
+)  # Registernumber, number of decimals
 volt_string = ""
 if battery_rated_volt == 0:
     volt_string = "autodetect"
@@ -76,4 +102,3 @@ print("System voltage:\t" + volt_string + "V")
 print("Voltage configuration:")
 val = instrument.read_register(0x900E, 2, 3, False)
 print(val)
-
