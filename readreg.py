@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 import minimalmodbus
 import serial
+import struct
+
+#Support functions
+
+def convertToFloat(input_int):
+	#read_long returns a 32-bit int, convert to float...
+	packed_v = struct.pack('>l', input_int)
+	output_float =  struct.unpack('>f', packed_v)[0]
+	return output_float
+
 
 # Set to true to edit values
 WRITE = True
@@ -34,6 +44,26 @@ EQUIPMENT_TEMP = 0x3111
 BAT_SOC = 0x311A
 BAT_RATED_VOLTAGE = 0x9067
 
+BAT_VOLTAGE_MAX_DAY = 0x3302# 00: 00 Refresh every day V 100
+BAT_VOLTAGE_MIN_DAY = 0x3303# 00: 00 Refresh every day V 100
+CONS_ENERGY_TODAY_L = 0x3304# 00: 00 Clear every day KWH 100
+CONS_ENERGY_TODAY_H = 0x3305# 100
+CONS_ENERGY_MONTH_L = 0x3306# 00: 00 Clear on the first day of month 100
+CONS_ENERGY_MONTH_H = 0x3307# KWH 100
+CONS_ENERGY_YEAR_L = 0x3308# 00: 00 Clear on 1, Jan. 100
+CONS_ENERGY_YEAR_H = 0x3309# 100
+CONS_ENERGY_TOTAL_L = 0x330A# 100
+CONS_ENERGY_TOTAL_H = 0x330B# KWH 100
+GEN_ENERGY_TODAY_L = 0x330C# 00: 00 Clear every day. 100
+GEN_ENERGY_TODAY_H = 0x330D# 100
+GEN_ENERGY_MONTH_L = 0x330E# 00: 00 Clear on the first day of month. 100
+GEN_ENERGY_MONTH_H = 0x330F# KWH 100
+GEN_ENERGY_YEAR_L  = 0x3310# 00: 00 Clear on 1, Jan. 100
+GEN_ENERGY_YEAR_H  = 0x3311# KWH 100
+GEN_ENERGY_TOTAL_L  = 0x3312# KWH 100
+GEN_ENERGY_TOTAL_H  = 0x3313# 100
+
+
 # Print panel info
 pv_voltage = instrument.read_register(
     PV_VOLTAGE, 2, 4, False
@@ -53,6 +83,28 @@ temperature = instrument.read_register(
     BAT_TEMP, 2, 4, False
 )  # Registernumber, number of decimals
 print("Batt. temp:\t" + str(temperature) + "C")
+
+# Print generated energy info
+gen_energy_day = instrument.read_register(
+    GEN_ENERGY_TODAY_L, 2, 4, False
+)  # Registernumber, number of decimals
+print("Energy today:\t" + str(gen_energy_day) + "kWH")
+
+gen_energy_day=instrument.read_long(
+GEN_ENERGY_TODAY_L, 4, False, 0)  # Registernumber, number of decimals
+f = convertToFloat(gen_energy_day)
+print("Energy day:\t" + str(f) + str("kWh"))
+
+gen_energy_month=instrument.read_long(
+GEN_ENERGY_MONTH_L, 4, False, 0)  # Registernumber, number of decimals
+f = convertToFloat(gen_energy_month)
+print("Energy month:\t" + str(f) + str("kWh"))
+
+gen_energy_year=instrument.read_long(
+GEN_ENERGY_YEAR_L, 4, False, 0)  # Registernumber, number of decimals
+f = convertToFloat(gen_energy_year)
+print("Energy year:\t" + str(f) + str("kWh"))
+
 
 if WRITE:
     # Set battery type, 1 = Sealed
@@ -102,3 +154,4 @@ print("System voltage:\t" + volt_string + "V")
 print("Voltage configuration:")
 val = instrument.read_register(0x900E, 2, 3, False)
 print(val)
+
