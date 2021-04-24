@@ -16,7 +16,7 @@ def convertToFloat(input_int):
 WRITE = True
 
 instrument = minimalmodbus.Instrument(
-    "/dev/ttyUSB0", 1
+    "/dev/ttyXRUSB0", 1
 )  # port name, slave address (in decimal)
 
 instrument.serial.baudrate = 115200  # Baud
@@ -84,16 +84,10 @@ temperature = instrument.read_register(
 )  # Registernumber, number of decimals
 print("Batt. temp:\t" + str(temperature) + "C")
 
-# Print generated energy info
-gen_energy_day = instrument.read_register(
-    GEN_ENERGY_TODAY_L, 2, 4, False
-)  # Registernumber, number of decimals
-print("Energy today:\t" + str(gen_energy_day) + "kWH")
-
 gen_energy_day=instrument.read_long(
 GEN_ENERGY_TODAY_L, 4, False, 0)  # Registernumber, number of decimals
 f = convertToFloat(gen_energy_day)
-print("Energy day:\t" + str(f) + str("kWh"))
+print("Energy today:\t" + str(f) + str("kWh"))
 
 gen_energy_month=instrument.read_long(
 GEN_ENERGY_MONTH_L, 4, False, 0)  # Registernumber, number of decimals
