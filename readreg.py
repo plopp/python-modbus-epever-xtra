@@ -16,7 +16,7 @@ def convertToFloat(input_int):
 WRITE = True
 
 instrument = minimalmodbus.Instrument(
-    "/dev/ttyXRUSB0", 1
+    "/dev/ttyUSB0", 1
 )  # port name, slave address (in decimal)
 
 instrument.serial.baudrate = 115200  # Baud
