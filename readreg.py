@@ -3,7 +3,7 @@ import minimalmodbus
 import serial
 
 # Set to true to edit values
-WRITE = True
+WRITE = False
 
 instrument = minimalmodbus.Instrument(
     "/dev/ttyUSB0", 1
@@ -34,6 +34,48 @@ EQUIPMENT_TEMP = 0x3111
 BAT_SOC = 0x311A
 BAT_RATED_VOLTAGE = 0x9067
 
+# Holding registers
+BAT_TYPE = 0x9000
+BAT_CAPACITY = 0x9001
+HIGH_VOLTAGE_DISCONNECT = 0x9003
+CHARGING_LIMIT_VOLTAGE = 0x9004
+OVER_VOLTAGE_RECONNECT = 0x9005
+EQUALIZATION_VOLTAGE = 0x9006
+BOOST_VOLTAGE = 0x9007
+FLOAT_VOLTAGE = 0x9008
+BOOST_RECONNECT_VOLTAGE = 0x9009
+LOW_VOLTAGE_RECONNECT = 0x900A
+UNDER_VOLTAGE_RECOVER = 0x900B
+UNDER_VOLTAGE_WARNING = 0x900C
+LOW_VOLTAGE_DISCONNECT = 0x900D
+DISCHARGING_LIMIT_VOLTAGE = 0x900E
+
+high_voltage_disconnect = instrument.read_register(HIGH_VOLTAGE_DISCONNECT, 2)
+charging_limit_voltage = instrument.read_register(CHARGING_LIMIT_VOLTAGE, 2)
+over_voltage_reconnect = instrument.read_register(OVER_VOLTAGE_RECONNECT, 2)
+equalization_voltage = instrument.read_register(EQUALIZATION_VOLTAGE, 2)
+boost_voltage = instrument.read_register(BOOST_VOLTAGE, 2)
+float_voltage = instrument.read_register(FLOAT_VOLTAGE, 2)
+boost_reconnect_voltage = instrument.read_register(BOOST_RECONNECT_VOLTAGE, 2)
+low_voltage_reconnect = instrument.read_register(LOW_VOLTAGE_RECONNECT, 2)
+under_voltage_recover = instrument.read_register(UNDER_VOLTAGE_RECOVER, 2)
+under_voltage_warning = instrument.read_register(UNDER_VOLTAGE_WARNING, 2)
+low_voltage_disconnect = instrument.read_register(LOW_VOLTAGE_DISCONNECT, 2)
+discharging_limit_voltage = instrument.read_register(DISCHARGING_LIMIT_VOLTAGE, 2)
+
+print("high_voltage_disconnect:", high_voltage_disconnect, "V")
+print("charging_limit_voltage:", charging_limit_voltage, "V")
+print("over_voltage_reconnect:", over_voltage_reconnect, "V")
+print("equalization_voltage:", equalization_voltage, "V")
+print("boost_voltage:", boost_voltage, "V")
+print("float_voltage:", float_voltage, "V")
+print("boost_reconnect_voltage:", boost_reconnect_voltage, "V")
+print("low_voltage_reconnect:", low_voltage_reconnect, "V")
+print("under_voltage_recover:", under_voltage_recover, "V")
+print("under_voltage_warning:", under_voltage_warning, "V")
+print("low_voltage_disconnect:", low_voltage_disconnect, "V")
+print("discharging_limit_voltage:", discharging_limit_voltage, "V")
+
 # Print panel info
 pv_voltage = instrument.read_register(
     PV_VOLTAGE, 2, 4, False
@@ -57,9 +99,9 @@ print("Batt. temp:\t" + str(temperature) + "C")
 if WRITE:
     # Set battery type, 1 = Sealed
     sealed = 1
-    instrument.write_register(0x9000, 1, 0, functioncode=0x10, signed=False)
+    instrument.write_register(BAT_TYPE, sealed, 0, functioncode=0x10, signed=False)
 battery_type = instrument.read_register(
-    0x9000, 0, 3, False
+    BAT_TYPE, 0, 3, False
 )  # Registernumber, number of decimals
 type_string = ""
 if battery_type == 1:
@@ -75,9 +117,11 @@ print("Battery type:\t" + type_string)
 if WRITE:
     # Set capacity
     capacity = 75
-    instrument.write_register(0x9001, capacity, 0, functioncode=0x10, signed=False)
+    instrument.write_register(
+        BAT_CAPACITY, capacity, 0, functioncode=0x10, signed=False
+    )
 battery_capacity = instrument.read_register(
-    0x9001, 0, 3, False
+    BAT_CAPACITY, 0, 3, False
 )  # Registernumber, number of decimals
 print("Battery capac.:\t" + str(battery_capacity) + "Ah")
 
@@ -86,7 +130,9 @@ if WRITE:
     v_auto = 0
     v_12 = 1
     v_24 = 2
-    instrument.write_register(BAT_RATED_VOLTAGE, v_12, 0, functioncode=0x10, signed=False)
+    instrument.write_register(
+        BAT_RATED_VOLTAGE, v_12, 0, functioncode=0x10, signed=False
+    )
 battery_rated_volt = instrument.read_register(
     BAT_RATED_VOLTAGE, 0, 3, False
 )  # Registernumber, number of decimals
